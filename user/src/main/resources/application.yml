@@ -2,10 +2,14 @@ spring:
   application:
     name: user-service
   datasource:
+    url: jdbc:postgresql://localhost:5434/user_db  # Docker로 띄운 postgresql_user의 DB URL
+    username: user_user  # docker-compose.yml에 정의한 사용자 이름
+    password: user_password  # docker-compose.yml에 정의한 비밀번호
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/accessShield
-    username: postgres
-    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
 
 eureka:
   client:

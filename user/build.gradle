@@ -31,12 +31,21 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    
+    // OpenFeign 의존성
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     compileOnly 'org.projectlombok:lombok'
+    
+    // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'
+    
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Valid
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
 }
 
 dependencyManagement {
