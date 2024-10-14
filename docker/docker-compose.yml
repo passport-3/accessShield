@@ -1,0 +1,23 @@
+services:
+  postgresql:
+    container_name: postgresql
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:ㄴ
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: accessShield
+
+  redis-stack:
+    image: redis/redis-stack
+    container_name: redis-stack-compose
+    restart: always
+    environment:
+      REDIS_ARGS: "--requirepass systempass"
+    ports:
+      - 6379:6379
+      - 8001:8001

@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: auth-service
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+
+service:
+  jwt:
+    access-expiration: 3600000
+    secret-key: "3d9d5abb6494559eab91a0fd6b0bcd64806d1718de3e06bfcde2f0cfa98673efb893fad45f21ce98e43ced1106b0bca7a6b9f6054e84d54d4613240d8b8f90ae"
+
+server:
+  port: 19092
+
+user:
+  service:
+    url: http://localhost:19095  # user-service? ?? URL? ??
