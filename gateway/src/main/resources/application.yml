@@ -1,22 +1,73 @@
 server:
   port: 19091
+  tomcat:
+    max-http-header-size: 16384
 
 spring:
-#  main:
-#    web-application-type: reactive
+  main:
+    web-application-type: reactive
   application:
     name: gateway-service
+  data:
+    redis:
+      host: localhost
+      port: 6379
   cloud:
     gateway:
       routes:
+#        - id: gateway-service
+#          uri: lb://gateway-service
+#          predicates:
+#            - Path=/api/**
+#          filters:
+#            - name: AuthFilter
+#              args:
+#                excludePaths:
+#                  - /api/user/register
+#                  - /api/user/login
+#                  - /api/auth/login
+#                  - /api/auth/reIssue
+#                  - /api/auth/verify
+#                  - /api/auth/logout
+#        - id: user-service
+#          uri: lb://user-service
+#          predicates:
+#            - Path=/api/user/**
+#        - id: auth-service
+#          uri: lb://auth-service
+#          predicates:
+#            - Path=/api/auth/**
         - id: user-service
           uri: lb://user-service
           predicates:
-            - Path=/users/**
+            - Path=/api/user/**
+          filters:
+            - name: AuthFilter
+              args:
+                excludePaths:
+                  - /api/user/login
+                  - /api/user/register
         - id: auth-service
           uri: lb://auth-service
           predicates:
-            - Path=/auth/**
+            - Path=/api/auth/**
+          filters:
+            - name: AuthFilter
+              args:
+                excludePaths:
+                  - /api/auth/login
+                  - /api/auth/register
+        - id: gateway-service
+          uri: lb://gateway-service
+          predicates:
+            - Path=/api/**
+          filters:
+            - name: AuthFilter
+              args:
+                excludePaths:
+                  - /api/user/register
+                  - /api/user/login
+                  - /api/auth/login
       discovery:
         locator:
           enabled: true
@@ -25,7 +76,7 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:19090/eureka/
-service:
-  jwt:
-    access-expiration: 3600000
-    secret-key: "3d9d5abb6494559eab91a0fd6b0bcd64806d1718de3e06bfcde2f0cfa98673efb893fad45f21ce98e43ced1106b0bca7a6b9f6054e84d54d4613240d8b8f90ae"
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
