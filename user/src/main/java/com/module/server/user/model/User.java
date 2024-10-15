@@ -36,11 +36,11 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
-    public static User create(String username, String email, String password, String phone, UserRoleEnum role) {
+    public static User create(String username, String password, String email, String phone, UserRoleEnum role) {
         return User.builder()
                 .username(username)
-                .email(email)
                 .password(password)
+                .email(email)
                 .phone(phone)
                 .role(role)
                 .build();

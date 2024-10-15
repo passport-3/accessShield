@@ -18,6 +18,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authz -> authz
                     .requestMatchers("/api/auth/login").permitAll() // 인증을 요구하지 않는 URL
+                    .requestMatchers("/api/user/login").permitAll()
                     .requestMatchers("/api/auth/token").permitAll() // 인증을 요구하지 않는 URL
                     .requestMatchers("/api/auth/verify").permitAll() // 인증을 요구하지 않는 URL
                     .requestMatchers("/api/auth/reIssue").permitAll() // 인증을 요구하지 않는 URL

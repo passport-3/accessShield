@@ -30,7 +30,7 @@ public class TokenService {
     }
 
     public String login(UserInfoDto userInfo) throws JsonProcessingException {
-        String userId = userInfo.getUserId();
+        String userId = userInfo.getUsername();
         String role = userInfo.getRole();
 
         String accessToken = this.generateToken(Const.ACCESS_TOKEN, userId, role);
@@ -93,7 +93,7 @@ public class TokenService {
     }
 
     public String reIssueToken(UserInfoDto userInfo) throws JsonProcessingException {
-        String userId = userInfo.getUserId();
+        String userId = userInfo.getUsername();
         String role = userInfo.getRole();
 
         // access token이 존재할 경우 --> 만료 전인 access token일 경우 다시 반환해야하는지. 현재 토큰값 저장 안함
@@ -112,7 +112,7 @@ public class TokenService {
     }
     
     public void logout(UserInfoDto userInfo) throws JsonProcessingException {
-        String userId = userInfo.getUserId();
+        String userId = userInfo.getUsername();
         String role = userInfo.getRole();
 
         // access token 삭제
