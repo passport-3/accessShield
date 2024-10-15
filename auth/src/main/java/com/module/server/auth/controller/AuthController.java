@@ -23,8 +23,11 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<String> getToken(@RequestBody UserInfoDto userInfo) {
+
+        log.info("Received login request: userId = {}, role = {}", userInfo.getUsername(), userInfo.getRole());
+
         // 입력 검증
-        if (userInfo == null || userInfo.getUserId() == null || userInfo.getRole() == null) {
+        if (userInfo == null || userInfo.getUsername() == null || userInfo.getRole() == null) {
             return ResponseEntity.badRequest().body("Invalid login request: username and role are required.");
         }
 
@@ -83,7 +86,7 @@ public class AuthController {
     @PostMapping("/reIssue")
     public ResponseEntity<String> reIssue(@RequestBody UserInfoDto userInfo) {
         // 입력 검증
-        if (userInfo == null || userInfo.getUserId() == null || userInfo.getRole() == null) {
+        if (userInfo == null || userInfo.getUsername() == null || userInfo.getRole() == null) {
             return ResponseEntity.badRequest().body("Invalid login request: userId and role are required.");
         }
 
@@ -105,7 +108,7 @@ public class AuthController {
      */
     @DeleteMapping("/logout")
     public ResponseEntity<Void> logout(@RequestBody UserInfoDto userInfo) {
-        if (userInfo == null || userInfo.getUserId() == null || userInfo.getRole() == null) {
+        if (userInfo == null || userInfo.getUsername() == null || userInfo.getRole() == null) {
             return ResponseEntity.badRequest().build();
         }
 
