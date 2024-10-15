@@ -1,11 +1,6 @@
 spring:
   application:
     name: auth-service
-  datasource:
-    url: jdbc:postgresql://localhost:5433/auth_db  # Docker로 띄운 postgresql_user의 DB URL
-    username: auth_user  # docker-compose.yml에 정의한 사용자 이름
-    password: auth_password  # docker-compose.yml에 정의한 비밀번호
-    driver-class-name: org.postgresql.Driver
   data:
     redis:
       host: localhost
