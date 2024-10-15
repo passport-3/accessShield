@@ -9,8 +9,8 @@ import lombok.*;
 @Builder
 public class AuthToken {
 
-    @JsonProperty("username")
-    private String username;
+    @JsonProperty("userId")
+    private String userId;
 
     @JsonProperty("category")
     private String category;
@@ -19,8 +19,8 @@ public class AuthToken {
     private long expireTime;
 
     @Builder(builderClassName = "TokenBuilder", builderMethodName = "TokenBuilder")
-    public AuthToken(String username, String category, long expireTime) {
-        this.username = username;
+    public AuthToken(String userId, String category, long expireTime) {
+        this.userId = userId;
         this.category = category;
         this.expireTime = expireTime;
     }

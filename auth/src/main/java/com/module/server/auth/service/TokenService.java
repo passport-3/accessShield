@@ -30,37 +30,37 @@ public class TokenService {
     }
 
     public String login(UserInfoDto userInfo) throws JsonProcessingException {
-        String username = userInfo.getUserId();
+        String userId = userInfo.getUserId();
         String role = userInfo.getRole();
 
-        String accessToken = this.generateToken(Const.ACCESS_TOKEN, username, role);
-        String refreshToken = this.generateToken(Const.REFRESH_TOKEN, username, role);
+        String accessToken = this.generateToken(Const.ACCESS_TOKEN, userId, role);
+        String refreshToken = this.generateToken(Const.REFRESH_TOKEN, userId, role);
 
         return accessToken;
     }
 
-    public String generateToken(String category, String username, String role) throws JsonProcessingException {
+    public String generateToken(String category, String userId, String role) throws JsonProcessingException {
 
         long expireTime = category.equals(Const.ACCESS_TOKEN) ? Const.ACCESS_TOKEN_EXPIRES_IN : Const.REFRESH_TOKEN_EXPIRES_IN;
 
         // 토큰 생성
-        String token = jwtTokenUtil.createToken(Const.ACCESS_TOKEN, username, role, expireTime);
+        String token = jwtTokenUtil.createToken(Const.ACCESS_TOKEN, userId, role, expireTime);
 
         AuthToken tokenData = AuthToken.TokenBuilder()
-                .username(username)
+                .userId(userId)
                 .category(category)
                 .expireTime(expireTime)
                 .build();
 
         // 토큰 저장
-        String key = this.generateRedisKey(category, username);
+        String key = this.generateRedisKey(category, userId);
         this.saveTokenData(key, tokenData);
 
         return token;
     }
 
-    private String generateRedisKey(String category, String username) {
-        return "token:" + category + ":" + username;
+    private String generateRedisKey(String category, String userId) {
+        return "token:" + category + ":" + userId;
     }
 
 
@@ -73,8 +73,8 @@ public class TokenService {
         log.info("============> Saved Data {}", savedData);
     }
 
-    public AuthToken getTokenData(String category, String username) throws JsonProcessingException {
-        String key = generateRedisKey(category, username);
+    public AuthToken getTokenData(String category, String userId) throws JsonProcessingException {
+        String key = generateRedisKey(category, userId);
         return this.getTokenData(key);
     }
 
@@ -92,14 +92,14 @@ public class TokenService {
         return jwtTokenUtil.validateToken(token);
     }
 
-    public String reIssueToken(LoginUserInfo loginUserInfo) throws JsonProcessingException {
-        String username = loginUserInfo.getUsername();
-        String role = loginUserInfo.getRole();
+    public String reIssueToken(UserInfoDto userInfo) throws JsonProcessingException {
+        String userId = userInfo.getUserId();
+        String role = userInfo.getRole();
 
         // access token이 존재할 경우 --> 만료 전인 access token일 경우 다시 반환해야하는지. 현재 토큰값 저장 안함
 
         // refresh token이 존재하는지 확인
-        String refreshTokenKey = this.generateRedisKey(Const.REFRESH_TOKEN, username);
+        String refreshTokenKey = this.generateRedisKey(Const.REFRESH_TOKEN, userId);
 
         String refreshToken = String.valueOf(this.getTokenData(refreshTokenKey));
 
@@ -107,11 +107,24 @@ public class TokenService {
             throw new IllegalArgumentException("Refresh token is not valid or does not exist.");
         }
 
-        return this.generateToken(Const.ACCESS_TOKEN, username, role);
+        return this.generateToken(Const.ACCESS_TOKEN, userId, role);
 
     }
+    
+    public void logout(UserInfoDto userInfo) throws JsonProcessingException {
+        String userId = userInfo.getUserId();
+        String role = userInfo.getRole();
 
-    public void deleteTokenData(String key) {
+        // access token 삭제
+        String accessToken = this.generateToken(Const.ACCESS_TOKEN, userId, role);
+        this.deleteTokenData(accessToken);
+
+        // refresh token 삭제
+        String refreshTokenKey = this.generateRedisKey(Const.REFRESH_TOKEN, userId);
+        this.deleteTokenData(refreshTokenKey);
+    }
+
+    private void deleteTokenData(String key) {
         redisTemplate.delete(key);
     }
 }
