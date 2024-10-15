@@ -1,34 +1,102 @@
 package com.module.server.auth.controller;
 
-import com.module.server.auth.dto.TokenResponseDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.module.server.auth.dto.UserInfoDto;
-import com.module.server.auth.service.AuthService;
+import com.module.server.auth.model.LoginUserInfo;
+import com.module.server.auth.service.TokenService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
+    private final TokenService tokenService;
 
-    private final AuthService authService;
-
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
-
-
+    /**
+     * access token, refresh token 생성 후 Redis에 저장
+     * @param userInfo
+     * @return
+     */
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDto> login(@RequestBody UserInfoDto userInfoDto) {
-        // 1. AuthService에서 로그인 처리 및 JWT 토큰 발급
-        String accessToken = authService.login(userInfoDto);
-        String refreshToken = null; // authService.createRefreshToken(userInfoDto.getUserId());
+    public ResponseEntity<String> getToken(@RequestBody UserInfoDto userInfo) {
+        // 입력 검증
+        if (userInfo == null || userInfo.getUserId() == null || userInfo.getRole() == null) {
+            return ResponseEntity.badRequest().body("Invalid login request: username and role are required.");
+        }
 
-        // 2. 토큰을 클라이언트에게 응답으로 반환
-        TokenResponseDto tokenResponseDto = new TokenResponseDto(accessToken, refreshToken);
-        return ResponseEntity.ok(tokenResponseDto);
+        String accessToken = "";
+        try {
+            accessToken = tokenService.login(userInfo);
+
+            log.info("엑세스토큰 {} ", accessToken);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return ResponseEntity.ok(accessToken);
     }
+
+    /**
+     * 토큰 검증
+     * @param accessToken
+     * @return
+     */
+    @GetMapping("/verify")
+    public ResponseEntity<Boolean> verify(@RequestParam String accessToken) {
+        if (accessToken == null || accessToken.isEmpty()) {
+            return ResponseEntity.badRequest().body(false);
+        }
+
+        boolean isValid = tokenService.validateToken(accessToken);
+        log.info("token {}, result {}", accessToken, isValid);
+
+        return ResponseEntity.ok(isValid);
+    }
+
+//    /**
+//     * 사용자 id로 토큰 정보 조회
+//     *
+//     * @param category
+//     * @param username
+//     * @return
+//     */
+//    @GetMapping("/token")
+//    public ResponseEntity<String> getToken(@RequestParam String category, @RequestParam String username)  {
+//
+//        try {
+//            AuthToken tokenData = tokenService.getTokenData(category, username);
+//            log.info("tokenData {}", tokenData);
+//        } catch (JsonProcessingException e) {
+//            throw new RuntimeException(e);
+//        }
+//        return null;
+//    }
+
+    /**
+     * accesst token 재발급
+     * @param loginUserInfo
+     * @return
+     */
+    @PostMapping("/reIssue")
+    public ResponseEntity<String> reIssue(@RequestBody LoginUserInfo loginUserInfo) {
+        // 입력 검증
+        if (loginUserInfo == null || loginUserInfo.getUsername() == null || loginUserInfo.getRole() == null) {
+            return ResponseEntity.badRequest().body("Invalid login request: username and role are required.");
+        }
+
+        String newAccessToken = "";
+        try {
+            newAccessToken =  tokenService.reIssueToken(loginUserInfo);
+            log.info("=============> NEW AccessToken {}", newAccessToken);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        return ResponseEntity.ok(newAccessToken);
+    }
+
 }
