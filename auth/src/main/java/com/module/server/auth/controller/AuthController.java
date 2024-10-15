@@ -2,7 +2,6 @@ package com.module.server.auth.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.module.server.auth.dto.UserInfoDto;
-import com.module.server.auth.model.userInfo;
 import com.module.server.auth.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
