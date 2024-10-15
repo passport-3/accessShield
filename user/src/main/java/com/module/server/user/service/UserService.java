@@ -26,7 +26,7 @@ public class UserService {
     }
 
     // 로그인
-    public String login(String username, String password, String role) {
+    public String login(String username) {
         // 1. 사용자 정보 조회
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("해당 회원은 존재하지 않습니다."));
@@ -35,7 +35,7 @@ public class UserService {
         log.info("username={}, role={}", user.getUsername(), user.getRole());
 
         // 2. 사용자 ID와 역할을 UserInfoDto로 묶어서 Auth 서비스로 전달할거임.
-        UserInfoDto userInfoDto = new UserInfoDto(user.getUsername(), user.getRole().name(), user.getPassword());
+        UserInfoDto userInfoDto = new UserInfoDto(user.getUsername(), user.getRole().name());
 
 
         // 4. 응답 성공 여부 확인

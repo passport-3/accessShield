@@ -8,11 +8,10 @@ import lombok.NoArgsConstructor;
 public class UserInfoDto {
     private String username;
     private String role;
-    private String password;
 
-    public UserInfoDto(String username, String role, String password) {
+    public UserInfoDto(String username, String role) {
         this.username = username;
         this.role = role;
-        this.password = password;
+
     }
 }

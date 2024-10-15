@@ -1,20 +1,6 @@
 version: '3.8'
 
 services:
-  # Auth 서비스용 PostgreSQL
-  postgresql_auth:
-    container_name: postgresql_auth
-    image: postgres:latest
-    restart: always
-    volumes:
-      - ./postgres-auth-data:/var/lib/postgresql/data
-    ports:
-      - 5433:5432  # 윈도우에서 다른 포트로 매핑
-    environment:
-      POSTGRES_USER: auth_user
-      POSTGRES_PASSWORD: auth_password
-      POSTGRES_DB: auth_db
-
   # User 서비스용 PostgreSQL
   postgresql_user:
     container_name: postgresql_user
