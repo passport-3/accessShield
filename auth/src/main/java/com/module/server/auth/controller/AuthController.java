@@ -27,7 +27,7 @@ public class AuthController {
         log.info("Received login request: userId = {}, role = {}", userInfo.getUsername(), userInfo.getRole());
 
         // 입력 검증
-        if (userInfo == null || userInfo.getUsername() == null || userInfo.getRole() == null) {
+        if (userInfo.getUsername() == null || userInfo.getRole() == null) {
             return ResponseEntity.badRequest().body("Invalid login request: username and role are required.");
         }
 
@@ -49,6 +49,8 @@ public class AuthController {
      */
     @GetMapping("/verify")
     public ResponseEntity<Boolean> verify(@RequestParam String accessToken) {
+        log.info("Received verify request: accessToken = {}", accessToken);
+
         if (accessToken == null || accessToken.isEmpty()) {
             return ResponseEntity.badRequest().body(false);
         }
@@ -92,7 +94,7 @@ public class AuthController {
 
         String newAccessToken = "";
         try {
-            newAccessToken =  tokenService.reIssueToken(userInfo);
+            newAccessToken = tokenService.reIssueToken(userInfo);
             log.info("=============> NEW AccessToken {}", newAccessToken);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
