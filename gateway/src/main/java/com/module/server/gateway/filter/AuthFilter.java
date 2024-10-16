@@ -57,6 +57,21 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
                         .bufferFactory().wrap("로그인이 필요합니다.".getBytes()))));
             }
 
+            // TODO redis check
+
+            // TODO token generate
+
+            // TODO ROLE check
+
+            // TODO 요청속도 제한
+
+            // TODO logging
+
+            // TODO ip white list check
+
+            // TODO 오류 메시지 형식
+
+            // 토큰 검증
             return webClientBuilder.build()
                     .get()  // GET 메서드 사용
                     .uri("http://localhost:19092/api/auth/verify?accessToken={token}", token)  // accessToken을 쿼리 파라미터로 추가
@@ -89,6 +104,14 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
         public boolean isExcludedPath(String path) {
             return excludePaths.stream().anyMatch(excludePath -> path.startsWith(excludePath));
         }
+    }
+
+    // 오류 메시지
+    private Mono<Void> sendErrorResponse(ServerWebExchange exchange, HttpStatus status, String message) {
+        exchange.getResponse().setStatusCode(status);
+        exchange.getResponse().getHeaders().add("Content-Type", "text/plain;charset=UTF-8");
+        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse()
+                .bufferFactory().wrap(message.getBytes())));
     }
 
     private Mono<Void> unauthorizedResponse(ServerWebExchange exchange, String message) {
