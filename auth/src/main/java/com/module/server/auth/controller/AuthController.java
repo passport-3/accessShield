@@ -2,11 +2,21 @@ package com.module.server.auth.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.module.server.auth.dto.UserInfoDto;
+import com.module.server.auth.model.Api;
+import com.module.server.auth.model.ApiRoleMapping;
+import com.module.server.auth.repository.ApiRepository;
+import com.module.server.auth.repository.ApiRoleMappingRepository;
 import com.module.server.auth.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -15,6 +25,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final TokenService tokenService;
+    private final ApiRepository apiRepository;
+    private final ApiRoleMappingRepository apiRoleMappingRepository;
+
 
     /**
      * access token, refresh token 생성 후 Redis에 저장
@@ -122,5 +135,32 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * API 경로에 대한 허용된 역할을 반환하는 엔드포인트
+     * @param apiPath API 경로
+     * @return 허용된 역할 리스트
+     */
+    @GetMapping("/role")
+    public ResponseEntity<List<String>> getRolesForApi(@RequestParam String apiPath) {
+        // API 경로로 API 엔티티 조회
+        Optional<Api> apiOpt = apiRepository.findByPath(apiPath);
+
+        if (apiOpt.isPresent()) {
+            Api api = apiOpt.get();
+
+            // 해당 API에 허용된 역할들을 중간 테이블에서 가져옴
+            List<ApiRoleMapping> apiRoleMappings = apiRoleMappingRepository.findByApi(api);
+            List<String> allowedRoles = apiRoleMappings.stream()
+                    .map(mapping -> mapping.getRole().getName())
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(allowedRoles);  // 허용된 역할 리스트 반환
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // API 경로가 존재하지 않으면 404 반환
+        }
+    }
+
+
 
 }
