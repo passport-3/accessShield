@@ -1,11 +1,15 @@
 package com.module.server.user.service;
 
 import com.module.server.user.client.AuthServiceClient;
+import com.module.server.user.dto.LoginRequestDto;
 import com.module.server.user.dto.RegisterRequestDto;
 import com.module.server.user.dto.UserInfoDto;
 import com.module.server.user.model.User;
 import com.module.server.user.repository.UserRepository;
 import feign.FeignException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -81,4 +85,18 @@ public class UserService {
         // 4. User 저장
         userRepository.save(user);
     }
+
+    public void logout(LoginRequestDto loginRequestDto) {
+
+        // 1. 사용자 정보 조회
+        User user = userRepository.findByUsername(loginRequestDto.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("해당 회원은 존재하지 않습니다."));
+
+        // 2. 사용자와 역할을 UserInfoDto에 담는다.
+        UserInfoDto userInfoDto = new UserInfoDto(user.getUsername(), user.getRole().name());
+
+        // 3. UserInfoDto를 auth서버로 전달
+        authServiceClient.logout(userInfoDto);
+    }
+
 }

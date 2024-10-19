@@ -2,7 +2,9 @@ package com.module.server.user.controller;
 
 import com.module.server.user.dto.LoginRequestDto;
 import com.module.server.user.dto.RegisterRequestDto;
+import com.module.server.user.dto.UserInfoDto;
 import com.module.server.user.service.UserService;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +37,14 @@ public class UserController {
         userService.register(registerReqeustDto);
         return ResponseEntity.ok("회원가입 성공");
     }
+
+    // 로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestBody LoginRequestDto loginRequestDto) {
+        userService.logout(loginRequestDto);
+        return ResponseEntity.ok("로그아웃 성공");
+    }
+
 
     @GetMapping("/test")
     public String test(){
