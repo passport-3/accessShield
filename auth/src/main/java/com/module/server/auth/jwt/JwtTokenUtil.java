@@ -35,7 +35,8 @@ public class JwtTokenUtil {
     public String createToken(String category, String username, String role, Long expireTime) {
         return BEARER_PREFIX +
                 Jwts.builder()
-                        .setSubject(username)               // 사용자 식별자값(ID)
+                        //setSubject(username)               // 사용자 식별자값(ID)
+                        .claim("username", username)
                         .claim("category", category)     // 토큰 종류 access / refresh
                         .claim(AUTHORIZATION_KEY, role)     // 사용자 권한
                         .setExpiration(new Date(System.currentTimeMillis() + expireTime)) // 만료 시간
