@@ -1,7 +1,9 @@
 package com.module.server.gateway.filter;
 
 import com.module.server.gateway.dto.RoleResponseDto;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONObject;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -17,6 +19,8 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -136,67 +140,36 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
     }
 
 
-    /**
-     * 역할 검증 로직 (Auth 서버에 역할 검증 요청)
-     * @param token 인증 토큰
-     * @param exchange WebExchange 객체
-     * @param chain 필터 체인
-     * @return Mono<Void>
-     */
-    private Mono<Void> checkTokenRole(String token, ServerWebExchange exchange, GatewayFilterChain chain) {
-        // Auth 서버로 JWT 토큰 검증 및 역할 요청 (예전 방식은 삭제)
-        return webClientBuilder.build()
-                .get()
-                .uri("http://localhost:19092/api/auth/role?accessToken={token}", token)  // Auth 서버에 역할 확인 요청
-                .retrieve()
-                .bodyToMono(RoleResponseDto.class)
-                .flatMap(roleResponseDto -> {
-                    // Auth 서버로부터 받은 사용자 역할 정보
-                    String role = roleResponseDto.getRole();
-                    log.info("Extracted Role from Auth server: {}", role);
 
-                    String apiEndpoint = exchange.getRequest().getPath().value();  // 현재 요청한 API 경로 가져오기
+    // API 접근 권한을 Redis에서 확인하는 메서드
+    private Mono<Void> checkApiAccess(String role, String path, ServerWebExchange exchange, GatewayFilterChain chain) {
+        String redisKey = "role_api:" + role;
 
-                    // Auth 서버로 API별 허용된 역할 정보 요청
-                    return getRolesFromAuth(apiEndpoint)
-                            .flatMap(allowedRoles -> {
-                                if (allowedRoles == null || allowedRoles.isEmpty()) {
-                                    return sendErrorResponse(exchange, HttpStatus.NOT_FOUND, "API 경로가 존재하지 않습니다.");
-                                }
-
-                                // 허용된 역할에 사용자의 역할이 포함되지 않으면 403 Forbidden 반환
-                                if (!allowedRoles.contains(role)) {
-                                    log.info("Role {} is not allowed to access {}", role, apiEndpoint);
-                                    return sendErrorResponse(exchange, HttpStatus.FORBIDDEN, "접근 권한이 없습니다.");
-                                }
-
-                                // 역할 검증 통과 시 다음 필터 체인 진행
-                                return chain.filter(exchange);
-                            });
-                })
-                .onErrorResume(e -> {
-                    log.error("Error during role verification: {}", e.getMessage());
-                    return sendErrorResponse(exchange, HttpStatus.INTERNAL_SERVER_ERROR, "인증 서비스 오류가 발생했습니다.");
-                });
+        // Redis에서 역할에 맞는 API 목록 가져오기
+        return redisTemplate.opsForSet().members(redisKey)
+                .flatMap(apiSet -> {
+                    if (apiSet != null && apiSet.contains(path)) {
+                        return chain.filter(exchange); // 권한 있을 경우 다음 필터 진행
+                    } else {
+                        return unauthorizedResponse(exchange, "접근 권한이 없습니다."); // 권한 없을 경우
+                    }
+                }).then();
     }
 
-    /**
-     * Auth 서버로부터 API별 허용된 역할 정보를 받아오는 메서드
-     * @param apiEndpoint API 경로
-     * @return 허용된 역할 리스트
-     */
-    private Mono<List<String>> getRolesFromAuth(String apiEndpoint) {
-        return webClientBuilder.build()
-                .get()
-                .uri("http://localhost:19092/api/auth/role?apiPath={apiEndpoint}", apiEndpoint)  // Auth 서버에서 역할 정보를 가져옴
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<String>>() {});  // 허용된 역할 리스트 반환
+    // JWT에서 role을 추출하는 메서드 (JWT의 Payload만 사용)
+    private String getRoleFromToken(String token) {
+        String[] tokenParts = token.split("\\.");
+        String payload = new String(Base64.getDecoder().decode(tokenParts[1]));
+        JSONObject jsonObject = new JSONObject(Integer.parseInt(payload));
+        return jsonObject.getAsString("role");
     }
 
-    // 1. JWT토큰 검증 -> 먼저 Auth  서버에 JWT토큰을 보내 사용자의 역할 정보를 받는다.
-    // 2. API별 허용된 역할 정보 요청 -> Auth  서버에 API 경로를 보내어 해당 API에 허용된 역할 리스트를 요청한다.
-    // 3. 역할비교 : 사용자 역할이 해당 API에 허용된 역할 리스트에 포함되어 있는지 확인한다.
-    // 허용되지 않는 경우 -> 403, 허용된경우 -> 필터체인을 진행하여 요청을 허용한다.
+
+
+
+
+
+
 
 
     /**
