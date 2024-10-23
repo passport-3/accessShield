@@ -18,19 +18,18 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
 @Slf4j
-@Component
-public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> {
+//@Component
+public class AuthFilter2 extends AbstractGatewayFilterFactory<AuthFilter2.Config> {
 
     private final WebClient.Builder webClientBuilder;
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private static final int MAX_REQUESTS_PER_MINUTE = 60;
 
-    public AuthFilter(WebClient.Builder webClientBuilder, ReactiveRedisTemplate<String, String> redisTemplate) {
+    public AuthFilter2(WebClient.Builder webClientBuilder, ReactiveRedisTemplate<String, String> redisTemplate) {
         super(Config.class);
         this.webClientBuilder = webClientBuilder;
         this.redisTemplate = redisTemplate;

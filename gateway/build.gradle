@@ -38,6 +38,21 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    implementation 'org.json:json:20210307'
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+
+    // JSON 처리에 사용할 경우
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    // 로깅을 위한 SLF4J
+    implementation 'org.slf4j:slf4j-api'
+
+    // Security
+    //implementation 'org.springframework.boot:spring-boot-starter-security'
+    //testImplementation 'org.springframework.security:spring-security-test'
 }
 
 dependencyManagement {
