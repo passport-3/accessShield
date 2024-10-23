@@ -136,8 +136,8 @@
 ## 🍎 CONTRIBUTORS
 | 팀원명 | 포지션 | 담당(개인별 기여점) | 깃허브 링크 |
 | --- | --- | --- | --- |
-| 유희진 | 팀원 |  OAuth 2.0 기반 인증 시스템 구현 |   https://github.com/heejin1023 | 
-| 한수빈 | 팀원 |  사용자 권한 기반 자원 접근 제한 | https://github.com/subinny2 |
+| 유희진 | 팀원 |  OAuth 2.0 인증 시스템 구현 | [https://github.com/heejin1023](https://github.com/heejin1023) | 
+| 한수빈 | 팀원 |  사용자 권한 접근 제한<br>- API 경로 접근 권한 정의 및 Redis 저장<br>- Gateway에서 Redis를 통한 권한 처리<br><br>데모 사용자 서버 개발<br>- 회원가입, 로그인 구현<br>- 로그아웃 정보 AUTH 서버 전달 | [https://github.com/subinny2](https://github.com/subinny2) |
 
 
 
