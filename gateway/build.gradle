@@ -28,6 +28,7 @@ ext {
 }
 
 dependencies {
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
@@ -51,8 +52,11 @@ dependencies {
     implementation 'org.slf4j:slf4j-api'
 
     // Security
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+    //implementation 'org.springframework.boot:spring-boot-starter-security'
     //testImplementation 'org.springframework.security:spring-security-test'
+
+    // accessShield
+    implementation project(':accessShield-module')
 }
 
 dependencyManagement {

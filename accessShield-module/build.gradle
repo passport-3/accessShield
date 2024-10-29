@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.3.5'
+    id 'org.springframework.boot' version '3.3.4'
     id 'io.spring.dependency-management' version '1.1.6'
 }
 
@@ -22,6 +22,9 @@ configurations {
 repositories {
     mavenCentral()
 }
+
+bootJar { enabled = true }
+jar { enabled = true }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
@@ -52,3 +55,9 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+//tasks.withType(JavaCompile) {
+//    options.compilerArgs << "-Xlint:unchecked"
+//}
+//
+//tasks.register("prepareKotlinBuildScriptModel") {}
