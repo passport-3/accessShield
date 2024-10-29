@@ -42,33 +42,33 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/api/user/**
-          filters:
-            - name: AuthFilter
-              args:
-                excludePaths:
-                  - /api/user/login
-                  - /api/user/register
+#          filters:
+#            - name: AuthFilter
+#              args:
+#                excludePaths:
+#                  - /api/user/login
+#                  - /api/user/register
         - id: auth-service
           uri: lb://auth-service
           predicates:
             - Path=/api/auth/**
-          filters:
-            - name: AuthFilter
-              args:
-                excludePaths:
-                  - /api/auth/login
-                  - /api/auth/register
+#          filters:
+#            - name: AuthFilter
+#              args:
+#                excludePaths:
+#                  - /api/auth/login
+#                  - /api/auth/register
         - id: gateway-service
           uri: lb://gateway-service
           predicates:
             - Path=/api/**
-          filters:
-            - name: AuthFilter
-              args:
-                excludePaths:
-                  - /api/user/register
-                  - /api/user/login
-                  - /api/auth/login
+#          filters:
+#            - name: AuthFilter
+#              args:
+#                excludePaths:
+#                  - /api/user/register
+#                  - /api/user/login
+#                  - /api/auth/login
       discovery:
         locator:
           enabled: true
