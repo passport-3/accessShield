@@ -8,4 +8,15 @@
 
 rootProject.name = 'accessShield'
 
-include 'com.module.server', 'com.module.gateway', 'com.module.auth', 'com.module.user', 'com.module.accessShield-module'
+include 'gateway'
+include 'server'
+include 'auth'
+include 'user'
+include 'accessShield-module'
+
+// 프로젝트 구성 설정
+project(':gateway').projectDir = file('gateway')
+project(':server').projectDir = file('server')
+project(':auth').projectDir = file('auth')
+project(':user').projectDir = file('user')
+project(':accessShield-module').projectDir = file('accessShield-module')

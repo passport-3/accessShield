@@ -2,9 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/auth.main.iml" filepath="$PROJECT_DIR$/.idea/modules/auth.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/gateway.main.iml" filepath="$PROJECT_DIR$/.idea/modules/gateway.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/user.main.iml" filepath="$PROJECT_DIR$/.idea/modules/user.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/accessShield-module/accessShield.accessShield-module.main.iml" filepath="$PROJECT_DIR$/.idea/modules/accessShield-module/accessShield.accessShield-module.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/auth/accessShield.auth.main.iml" filepath="$PROJECT_DIR$/.idea/modules/auth/accessShield.auth.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/gateway/accessShield.gateway.main.iml" filepath="$PROJECT_DIR$/.idea/modules/gateway/accessShield.gateway.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/server/accessShield.server.main.iml" filepath="$PROJECT_DIR$/.idea/modules/server/accessShield.server.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/user/accessShield.user.main.iml" filepath="$PROJECT_DIR$/.idea/modules/user/accessShield.user.main.iml" />
     </modules>
   </component>
 </project>
