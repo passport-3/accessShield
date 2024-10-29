@@ -8,10 +8,19 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/com.module.accessShield-module" />
             <option value="$PROJECT_DIR$/com.module.auth" />
             <option value="$PROJECT_DIR$/com.module.gateway" />
             <option value="$PROJECT_DIR$/com.module.server" />
             <option value="$PROJECT_DIR$/com.module.user" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/accessShield-module" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/accessShield-module" />
           </set>
         </option>
       </GradleProjectSettings>

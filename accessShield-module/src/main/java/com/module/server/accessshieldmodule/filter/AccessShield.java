@@ -1,92 +1,85 @@
-package com.module.server.gateway.filter;
+package com.module.server.accessshieldmodule.filter;
 
-import com.module.server.gateway.constants.ErrorMessage;
+import com.module.server.accessshieldmodule.constans.ErrorMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveValueOperations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
 @Slf4j
-//@Component
-public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> {
-
+public class AccessShield implements WebFilter {
     private final WebClient.Builder webClientBuilder;
     private final ReactiveRedisTemplate<String, String> redisTemplate;
     private static final int MAX_REQUESTS_PER_MINUTE = 60;
 
-    public AuthFilter(WebClient.Builder webClientBuilder, ReactiveRedisTemplate<String, String> redisTemplate) {
-        super(Config.class);
+    private static List<String> excluePaths = null;
+
+
+    public AccessShield(WebClient.Builder webClientBuilder, ReactiveRedisTemplate<String, String> redisTemplate) {
         this.webClientBuilder = webClientBuilder;
         this.redisTemplate = redisTemplate;
     }
 
     @Override
-    public GatewayFilter apply(Config config) {
-        return (exchange, chain) -> {
-            log.info("--------------> Start Auth Filter");
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        log.info("--------------> Start Auth Filter");
 
-            // 1. IP 화이트리스트 체크
-            if (!checkIpWhitelist(exchange)) {
-                return sendErrorResponse(exchange, HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED_IP);
-            }
+        // 1. IP 화이트리스트 체크
+        if (!checkIpWhitelist(exchange)) {
+            return sendErrorResponse(exchange, HttpStatus.FORBIDDEN, ErrorMessage.ACCESS_DENIED_IP);
+        }
 
-            // 2. 현재 요청 경로 확인
-            String path = exchange.getRequest().getPath().value();
-            log.info("Current request path: {}", path);
+        // 2. 현재 요청 경로 확인
+        String path = exchange.getRequest().getPath().value();
+        log.info("Current request path: {}", path);
 
-            // 요청 헤더 로그
-            exchange.getRequest().getHeaders().forEach((key, values) -> {
-                log.info("Header {}: {}", key, values);
-            });
+        // 요청 헤더 로그
+        exchange.getRequest().getHeaders().forEach((key, values) -> {
+            log.info("Header {}: {}", key, values);
+        });
 
-            // 제외 경로 확인
-            if (config.isExcludedPath(path)) {
-                log.info("Path {} is excluded from authentication", path);
-                return chain.filter(exchange);
-            }
+        // TODO : 제외경로 확인
 
-            log.info("-----------> Next step token verify");
+        log.info("-----------> Next step token verify");
 
-            // 4. 토큰 존재 여부 확인 및 검증
-            String token = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-            if (token == null || token.isEmpty()) {
-                return unauthorizedResponse(exchange, ErrorMessage.LOGIN_REQUIRED);
-            }
-            log.info("------------> user token {}", token);
+        // 4. 토큰 존재 여부 확인 및 검증
+        String token = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (token == null || token.isEmpty()) {
+            return unauthorizedResponse(exchange, ErrorMessage.LOGIN_REQUIRED);
+        }
+        log.info("------------> user token {}", token);
 
-            return getTokenFromRedis(token, exchange, chain)
-                    .flatMap(storedToken -> {
-                        if (storedToken == null) {
-                            String username = getUsernameFromToken(token);
-                            if (username == null) {
-                                return Mono.empty(); // null일 경우 후속 처리 중단
-                            }
-                            return handleRefreshToken(username, exchange, chain);
+        return getTokenFromRedis(token, exchange, chain)
+                .flatMap(storedToken -> {
+                    if (storedToken == null) {
+                        String username = getUsernameFromToken(token);
+                        if (username == null) {
+                            return Mono.empty(); // null일 경우 후속 처리 중단
                         }
-                        return validateToken(token, exchange, chain);
-                    })
-                    .onErrorResume(e -> {
-                        log.error("Error during processing: {}", e.getMessage());
-                        return sendErrorResponse(exchange, HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessage.AUTH_SERVER_ERROR);
-                    });
-        };
+                        return handleRefreshToken(username, exchange, chain);
+                    }
+                    return validateToken(token, exchange, chain);
+                })
+                .onErrorResume(e -> {
+                    log.error("Error during processing: {}", e.getMessage());
+                    return sendErrorResponse(exchange, HttpStatus.INTERNAL_SERVER_ERROR, ErrorMessage.AUTH_SERVER_ERROR);
+                });
     }
+
+
 
     private boolean checkIpWhitelist(ServerWebExchange exchange) {
         String clientIp = getClientId(exchange);
@@ -97,7 +90,7 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
     }
 
     // redis에 저장된 access token이 있는지 확인
-    private Mono<String> getTokenFromRedis(String token, ServerWebExchange exchange, GatewayFilterChain chain) {
+    private Mono<String> getTokenFromRedis(String token, ServerWebExchange exchange, WebFilterChain chain) {
         String username = getUsernameFromToken(token);
         String tokenCategory = "access_token"; //getTokenCategory(token);
         String redisKey = generateRedisKey(tokenCategory, username);
@@ -108,7 +101,7 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
         return valueOps.get(redisKey);
     }
 
-    private Mono<Void> validateToken(String token, ServerWebExchange exchange, GatewayFilterChain chain) {
+    private Mono<Void> validateToken(String token, ServerWebExchange exchange, WebFilterChain chain) {
         return callHttpRequest("http://localhost:19092/api/auth/verify?accessToken={token}", HttpMethod.GET, token)
                 .flatMap(response -> {
                     if (response.getStatusCode().is2xxSuccessful()) {
@@ -124,7 +117,7 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
     }
 
     // refresh token 이 redis에 저장되어 있는지 확인 후 새로운 access token 발급 요청
-    private Mono<Void> handleRefreshToken(String username, ServerWebExchange exchange, GatewayFilterChain chain) {
+    private Mono<Void> handleRefreshToken(String username, ServerWebExchange exchange, WebFilterChain chain) {
         String refreshTokenKey = generateRedisKey("refresh_token", username);
         ReactiveValueOperations<String, String> valueOps = redisTemplate.opsForValue();
 
@@ -139,7 +132,7 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
     }
 
     // 새로운 access token 발급
-    private Mono<Void> requestNewAccessToken(String refreshToken, ServerWebExchange exchange, GatewayFilterChain chain) {
+    private Mono<Void> requestNewAccessToken(String refreshToken, ServerWebExchange exchange, WebFilterChain chain) {
         return webClientBuilder.build()
                 .post()
                 .uri("http://localhost:19092/api/auth/reIssue?username={username}&role={role}",
@@ -152,7 +145,7 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
                 });
     }
 
-    private Mono<Void> rateLimitCheck(ServerWebExchange exchange, GatewayFilterChain chain) {
+    private Mono<Void> rateLimitCheck(ServerWebExchange exchange, WebFilterChain chain) {
         String clientId = getClientId(exchange);
         String redisKey = "rate_limit:" + clientId;
 
@@ -167,7 +160,7 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
     }
 
     // API 접근 권한을 Redis에서 확인하는 메서드
-    private Mono<Void> checkApiAccess(String role, String path, ServerWebExchange exchange, GatewayFilterChain chain) {
+    private Mono<Void> checkApiAccess(String role, String path, ServerWebExchange exchange, WebFilterChain chain) {
         String redisKey = "role_api:" + role;
 
         // Redis에서 역할에 맞는 API 목록 가져오기
@@ -237,19 +230,4 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
     }
 
 
-    public static class Config {
-        private List<String> excludePaths;
-
-        public List<String> getExcludePaths() {
-            return excludePaths;
-        }
-
-        public void setExcludePaths(List<String> excludePaths) {
-            this.excludePaths = excludePaths;
-        }
-
-        public boolean isExcludedPath(String path) {
-            return excludePaths.stream().anyMatch(excludePath -> path.startsWith(excludePath));
-        }
-    }
 }

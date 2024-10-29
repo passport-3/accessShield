@@ -1,0 +1,29 @@
+server:
+  port: 19999
+  tomcat:
+    max-http-header-size: 16384
+
+spring:
+  main:
+    web-application-type: reactive
+    allow-bean-definition-overriding: true
+  application:
+    name: accessShiled-module
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      discovery:
+        locator:
+          enabled: true
+
+accessShield:
+  base-url: http://localhost:19999
+  auth-service-url: http://localhost:19092
+  excludePaths:
+    - /api/user/register
+    - /api/user/login
+    - /api/auth/login
+    - /api/auth/reIssue
+    - /api/auth/verify
+    - /api/auth/logout

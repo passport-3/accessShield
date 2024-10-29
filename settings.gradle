@@ -8,4 +8,4 @@
 
 rootProject.name = 'accessShield'
 
-include 'com.module.server', 'com.module.gateway', 'com.module.auth', 'com.module.user'
+include 'com.module.server', 'com.module.gateway', 'com.module.auth', 'com.module.user', 'com.module.accessShield-module'

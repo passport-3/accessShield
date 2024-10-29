@@ -113,7 +113,7 @@ public class AuthFilter2 extends AbstractGatewayFilterFactory<AuthFilter2.Config
                         // TODO 권한 체크
                         return chain.filter(exchange);
                     } else {
-                        return unauthorizedResponse(exchange, "유효하지 않은 토큰입니다.");
+                        return unauthorizedResponse(exchange, ErrorMessage.INVALID_TOKEN);
                     }
                 })
                 .onErrorResume(error -> {
